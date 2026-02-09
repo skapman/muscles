@@ -1,38 +1,94 @@
-// Muscle data for demonstration (2 muscles as PoC)
+// Muscle data
 const muscleData = {
-    // Front view muscles
-    'pectoralis-major': {
-        name: 'Большая грудная мышца',
-        latinName: 'Musculus pectoralis major',
-        function: 'Приведение и внутренняя ротация плеча, участие в дыхании',
-        origin: 'Ключица, грудина, хрящи верхних 6 ребер',
-        insertion: 'Гребень большого бугорка плечевой кости',
-        description: 'Крупная веерообразная мышца, покрывающая переднюю часть грудной клетки. Состоит из ключичной, грудинной и брюшной частей.'
+    "trapezius-upper": {
+        "name": "Trapezius Upper",
+        "region": "Upper Body",
+        "group": "Back",
+        "latinName": "Musculus trapezius upper",
+        "function": "TODO: Add function description",
+        "origin": "TODO: Add origin",
+        "insertion": "TODO: Add insertion",
+        "description": "TODO: Add description"
     },
-    'biceps-brachii': {
-        name: 'Двуглавая мышца плеча',
-        latinName: 'Musculus biceps brachii',
-        function: 'Сгибание предплечья, супинация предплечья, сгибание плеча',
-        origin: 'Длинная головка: надсуставной бугорок лопатки; Короткая головка: клювовидный отросток лопатки',
-        insertion: 'Бугристость лучевой кости',
-        description: 'Двуглавая мышца передней поверхности плеча. Имеет две головки (длинную и короткую), которые соединяются в общее брюшко.'
+    "trapezius-middle": {
+        "name": "Trapezius Middle",
+        "region": "Upper Body",
+        "group": "Back",
+        "latinName": "Musculus trapezius middle",
+        "function": "TODO: Add function description",
+        "origin": "TODO: Add origin",
+        "insertion": "TODO: Add insertion",
+        "description": "TODO: Add description"
     },
-    // Back view muscles
-    'trapezius': {
-        name: 'Трапециевидная мышца',
-        latinName: 'Musculus trapezius',
-        function: 'Поднимание, опускание и приведение лопатки, разгибание головы',
-        origin: 'Затылочная кость, выйная связка, остистые отростки C7-T12',
-        insertion: 'Ключица, акромион, ость лопатки',
-        description: 'Плоская широкая мышца треугольной формы, расположенная в верхней части спины. Состоит из верхней, средней и нижней частей.'
+    "trapezius-lower": {
+        "name": "Trapezius Lower",
+        "region": "Upper Body",
+        "group": "Back",
+        "latinName": "Musculus trapezius lower",
+        "function": "TODO: Add function description",
+        "origin": "TODO: Add origin",
+        "insertion": "TODO: Add insertion",
+        "description": "TODO: Add description"
     },
-    'latissimus-dorsi': {
-        name: 'Широчайшая мышца спины',
-        latinName: 'Musculus latissimus dorsi',
-        function: 'Приведение, разгибание и внутренняя ротация плеча',
-        origin: 'Остистые отростки T7-L5, крестец, подвздошный гребень, нижние 3-4 ребра',
-        insertion: 'Гребень малого бугорка плечевой кости',
-        description: 'Самая широкая мышца спины, занимающая всю нижнюю часть спины. Имеет треугольную форму.'
+    "pectoralis-major": {
+        "name": "Pectoralis Major",
+        "region": "Upper Body",
+        "group": "Chest",
+        "latinName": "Musculus pectoralis major",
+        "function": "TODO: Add function description",
+        "origin": "TODO: Add origin",
+        "insertion": "TODO: Add insertion",
+        "description": "TODO: Add description"
+    },
+    "rectus-abdominis": {
+        "name": "Rectus Abdominis",
+        "region": "Upper Body",
+        "group": "Waist",
+        "latinName": "Musculus rectus abdominis",
+        "function": "TODO: Add function description",
+        "origin": "TODO: Add origin",
+        "insertion": "TODO: Add insertion",
+        "description": "TODO: Add description"
+    },
+    "obliques": {
+        "name": "Obliques",
+        "region": "Upper Body",
+        "group": "Waist",
+        "latinName": "Musculus obliques",
+        "function": "TODO: Add function description",
+        "origin": "TODO: Add origin",
+        "insertion": "TODO: Add insertion",
+        "description": "TODO: Add description"
+    },
+    "deltoid-anterior": {
+        "name": "Deltoid Anterior",
+        "region": "Upper Body",
+        "group": "Shoulders",
+        "latinName": "Musculus deltoid anterior",
+        "function": "TODO: Add function description",
+        "origin": "TODO: Add origin",
+        "insertion": "TODO: Add insertion",
+        "description": "TODO: Add description"
+    },
+    "deltoid-medial-lateral": {
+        "name": "Deltoid Medial/Lateral",
+        "region": "Upper Body",
+        "group": "Shoulders",
+        "latinName": "Musculus deltoid medial/lateral",
+        "function": "TODO: Add function description",
+        "origin": "TODO: Add origin",
+        "insertion": "TODO: Add insertion",
+        "description": "TODO: Add description"
+    },
+    "deltoid-posterior": {
+        "name": "Deltoid Posterior",
+        "region": "Upper Body",
+        "group": "Shoulders",
+        "latinName": "Musculus deltoid posterior",
+        "function": "TODO: Add function description",
+        "origin": "TODO: Add origin",
+        "insertion": "TODO: Add insertion",
+        "description": "TODO: Add description"
     }
 };
 
@@ -53,7 +109,21 @@ async function loadSVG(url, containerId) {
         const svgText = await response.text();
         const container = document.getElementById(containerId);
         container.innerHTML = svgText;
-        return container.querySelector('svg');
+        const svg = container.querySelector('svg');
+
+        // Automatically add IDs to all path elements if they don't have one
+        if (svg) {
+            const view = containerId.includes('front') ? 'front' : 'back';
+            const paths = svg.querySelectorAll('path');
+            paths.forEach((path, index) => {
+                if (!path.id) {
+                    path.id = `${view}-path-${index}`;
+                }
+            });
+            console.log(`Added IDs to ${paths.length} paths in ${view} view`);
+        }
+
+        return svg;
     } catch (error) {
         console.error(`Error loading SVG from ${url}:`, error);
         return null;
@@ -89,13 +159,61 @@ async function init() {
     applyTransform();
 }
 
+// Store all SVG elements globally for cross-view highlighting
+let allMuscleElements = {};
+
 // Setup interactivity for SVG
 function setupInteractivity(svg, view) {
     // Map of SVG element IDs to muscle data keys
+    // Generated by Muscle Mapper
+    // Total muscles mapped: 43
+    // Unique muscles: 9
+
+    // Mapping SVG element IDs to muscle keys
     const muscleIdMap = {
-        'pectoralis-right': 'pectoralis-major',
-        'pectoralis-left': 'pectoralis-major',
-        'abs': 'biceps-brachii' // Using biceps data for abs as placeholder for PoC
+        "front-path-98": "trapezius-upper",
+        "front-path-97": "trapezius-upper",
+        "back-path-71": "trapezius-upper",
+        "back-path-73": "trapezius-upper",
+        "back-path-66": "trapezius-middle",
+        "back-path-65": "trapezius-middle",
+        "back-path-67": "trapezius-lower",
+        "back-path-69": "trapezius-lower",
+        "front-path-94": "pectoralis-major",
+        "front-path-93": "pectoralis-major",
+        "front-path-90": "rectus-abdominis",
+        "front-path-89": "rectus-abdominis",
+        "pectoralis-left": "rectus-abdominis",
+        "pectoralis-right": "rectus-abdominis",
+        "front-path-88": "rectus-abdominis",
+        "front-path-87": "rectus-abdominis",
+        "abs": "rectus-abdominis",
+        "front-path-81": "obliques",
+        "front-path-77": "obliques",
+        "front-path-73": "obliques",
+        "front-path-69": "obliques",
+        "front-path-71": "obliques",
+        "front-path-79": "obliques",
+        "front-path-75": "obliques",
+        "front-path-67": "obliques",
+        "front-path-66": "obliques",
+        "front-path-74": "obliques",
+        "front-path-70": "obliques",
+        "front-path-68": "obliques",
+        "front-path-72": "obliques",
+        "front-path-80": "obliques",
+        "front-path-76": "obliques",
+        "front-path-78": "obliques",
+        "back-path-28": "obliques",
+        "back-path-27": "obliques",
+        "front-path-122": "deltoid-anterior",
+        "front-path-124": "deltoid-anterior",
+        "front-path-92": "deltoid-medial-lateral",
+        "front-path-91": "deltoid-medial-lateral",
+        "back-path-60": "deltoid-medial-lateral",
+        "back-path-59": "deltoid-medial-lateral",
+        "back-path-61": "deltoid-posterior",
+        "back-path-63": "deltoid-posterior"
     };
 
     // Setup interactions for muscles with IDs
@@ -109,14 +227,20 @@ function setupInteractivity(svg, view) {
             muscleElement.dataset.muscle = muscleKey;
             muscleElement.dataset.elementId = elementId;
 
-            // Hover effect
+            // Store element for cross-view highlighting
+            if (!allMuscleElements[muscleKey]) {
+                allMuscleElements[muscleKey] = [];
+            }
+            allMuscleElements[muscleKey].push(muscleElement);
+
+            // Hover effect - highlight all elements with same muscleKey
             muscleElement.addEventListener('mouseenter', function(e) {
-                this.classList.add('highlighted');
+                highlightMuscleGroup(muscleKey, true);
                 showTooltip(e, muscleKey);
             });
 
             muscleElement.addEventListener('mouseleave', function() {
-                this.classList.remove('highlighted');
+                highlightMuscleGroup(muscleKey, false);
                 hideTooltip();
             });
 
@@ -132,6 +256,20 @@ function setupInteractivity(svg, view) {
             console.log(`Initialized muscle: ${elementId} -> ${muscleKey}`);
         } else {
             console.warn(`Muscle element #${elementId} not found in ${view} view`);
+        }
+    });
+}
+
+// Highlight all elements of a muscle group (across both views)
+function highlightMuscleGroup(muscleKey, highlight) {
+    const elements = allMuscleElements[muscleKey];
+    if (!elements) return;
+
+    elements.forEach(element => {
+        if (highlight) {
+            element.classList.add('highlighted');
+        } else {
+            element.classList.remove('highlighted');
         }
     });
 }
