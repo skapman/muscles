@@ -37,7 +37,9 @@ const muscleData = {
 };
 
 // Zoom and pan state
-let zoomLevel = 1;
+let zoomLevel = 0.9; // Start at 90% to show margins
+let minZoomLevel = 0.9; // Minimum 90% of full height
+let maxZoomLevel = 3;
 let panX = 0;
 let panY = 0;
 let isPanning = false;
@@ -82,6 +84,9 @@ async function init() {
 
     // Setup tooltip
     setupTooltip();
+
+    // Apply initial zoom
+    applyTransform();
 }
 
 // Setup interactivity for SVG
@@ -154,13 +159,13 @@ function setupZoomControls() {
 
 // Adjust zoom level
 function adjustZoom(delta) {
-    zoomLevel = Math.max(0.5, Math.min(3, zoomLevel + delta));
+    zoomLevel = Math.max(minZoomLevel, Math.min(maxZoomLevel, zoomLevel + delta));
     applyTransform();
 }
 
 // Reset zoom and pan
 function resetZoom() {
-    zoomLevel = 1;
+    zoomLevel = minZoomLevel;
     panX = 0;
     panY = 0;
     applyTransform();
