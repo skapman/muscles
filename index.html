@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивная анатомия мышц</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Sidebar Panel -->
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <header>
+                <h1>Интерактивная анатомия мышц</h1>
+                <p>Наведите на мышцу для информации, кликните для деталей</p>
+            </header>
+
+            <div id="muscle-details" class="muscle-details">
+                <div class="placeholder">
+                    <p>Выберите мышцу для просмотра детальной информации</p>
+                </div>
+
+                <div id="details-content" class="details-content" style="display: none;">
+                    <h2 id="muscle-name"></h2>
+                    <p class="latin-name" id="latin-name"></p>
+
+                    <div class="info-section">
+                        <h3>Функция</h3>
+                        <p id="muscle-function"></p>
+                    </div>
+
+                    <div class="info-section">
+                        <h3>Начало</h3>
+                        <p id="muscle-origin"></p>
+                    </div>
+
+                    <div class="info-section">
+                        <h3>Прикрепление</h3>
+                        <p id="muscle-insertion"></p>
+                    </div>
+
+                    <div class="info-section">
+                        <h3>Описание</h3>
+                        <p id="muscle-description"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button id="sidebar-toggle" class="sidebar-toggle">
+            <span class="toggle-icon">◀</span>
+        </button>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <div class="dual-view-container">
+            <div class="view-panel">
+                <h3>Вид спереди</h3>
+                <div id="front-svg-wrapper" class="svg-wrapper"></div>
+            </div>
+            <div class="view-panel">
+                <h3>Вид сзади</h3>
+                <div id="back-svg-wrapper" class="svg-wrapper"></div>
+            </div>
+        </div>
+
+        <!-- Zoom Controls -->
+        <div class="zoom-controls">
+            <button id="zoom-in" title="Увеличить">+</button>
+            <button id="zoom-reset" title="Сбросить">⟲</button>
+            <button id="zoom-out" title="Уменьшить">−</button>
+        </div>
+    </div>
+
+    <!-- Hover Tooltip -->
+    <div id="hover-tooltip" class="hover-tooltip" style="display: none;">
+        <strong id="tooltip-name"></strong>
+        <p id="tooltip-function"></p>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
