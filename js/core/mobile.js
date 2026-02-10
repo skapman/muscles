@@ -167,23 +167,47 @@ function setupBottomSheet() {
         }
     }, { passive: true });
 
-    // Tap handle or sheet to expand when collapsed
-    const tapToExpand = () => {
+    // Tap handle to toggle
+    handle.addEventListener('click', () => {
         if (sheetState === 'collapsed') {
             expandSheet();
+        } else if (sheetState === 'expanded') {
+            collapseSheet();
         }
-    };
+    });
 
-    handle.addEventListener('click', tapToExpand);
+    // Tap sheet content area
     sheet.addEventListener('click', (e) => {
+        // Tap compact area to expand
         if (e.target.closest('.sheet-compact')) {
-            tapToExpand();
+            if (sheetState === 'collapsed') {
+                expandSheet();
+            }
+        }
+        // Tap header area to collapse when expanded
+        else if (e.target.closest('.sheet-header') || e.target.closest('.sheet-handle')) {
+            if (sheetState === 'expanded') {
+                collapseSheet();
+            }
         }
     });
 
     // Close button
     if (closeBtn) {
-        closeBtn.addEventListener('click', hideSheet);
+        closeBtn.addEventListener('click', () => {
+            // Deselect muscle first
+            if (selectedMuscle) {
+                const elements = allMuscleElements[selectedMuscle];
+                if (elements) {
+                    elements.forEach(el => {
+                        el.classList.remove('selected', 'highlighted');
+                    });
+                }
+                selectedMuscle = null;
+            }
+            // Then hide sheet
+            hideSheet();
+        });
     }
 }
 
@@ -373,13 +397,23 @@ function setupInfoButton() {
     if (!infoBtn) return;
 
     infoBtn.addEventListener('click', () => {
-        // Deselect any muscle
-        if (selectedMuscle) {
-            deselectMuscle();
+        // Toggle: if sheet is visible, hide it
+        if (sheetState !== 'hidden') {
+            // Deselect any muscle
+            if (selectedMuscle) {
+                const elements = allMuscleElements[selectedMuscle];
+                if (elements) {
+                    elements.forEach(el => {
+                        el.classList.remove('selected', 'highlighted');
+                    });
+                }
+                selectedMuscle = null;
+            }
+            hideSheet();
+        } else {
+            // Show general info in sheet
+            showGeneralInfo();
         }
-
-        // Show general info in sheet
-        showGeneralInfo();
     });
 }
 

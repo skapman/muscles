@@ -216,6 +216,14 @@ body {
     user-select: none;
 }
 
+/* Disable tap highlight for all interactive elements on mobile */
+button, .zoom-btn, .sidebar-toggle, .mobile-info-btn, .sheet-close {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
 .muscle-interactive:hover,
 .muscle-interactive.highlighted {
     filter: brightness(1.5) drop-shadow(0 0 8px rgba(0, 212, 255, 0.8));
