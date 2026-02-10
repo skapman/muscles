@@ -10,10 +10,7 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Sidebar Panel -->
-        <!-- Mobile: Swipe handle -->
-        <div class="sidebar-handle"></div>
-
+    <!-- Desktop: Sidebar Panel -->
     <div id="sidebar" class="sidebar">
         <div class="sidebar-content">
             <header>
@@ -54,7 +51,7 @@
         </div>
 
         <button id="sidebar-toggle" class="sidebar-toggle">
-            <span class="toggle-icon">◀</span>
+            <span class="toggle-icon"></span>
         </button>
     </div>
 
@@ -70,12 +67,15 @@
             </div>
         </div>
 
-        <!-- Mobile: Single View with Tabs -->
+        <!-- Mobile: Fullscreen Single View -->
         <div class="mobile-view-container" style="display: none;">
-            <div class="view-tabs">
-                <button class="view-tab active" data-view="front">Вид спереди</button>
-                <button class="view-tab" data-view="back">Вид сзади</button>
+            <!-- View indicators (dots) -->
+            <div class="view-indicators">
+                <div class="view-indicator active" data-view="front"></div>
+                <div class="view-indicator" data-view="back"></div>
             </div>
+
+            <!-- Swipeable wrapper -->
             <div class="mobile-view-wrapper">
                 <div class="mobile-view-panel">
                     <div id="front-svg-wrapper-mobile" class="svg-wrapper"></div>
@@ -84,20 +84,69 @@
                     <div id="back-svg-wrapper-mobile" class="svg-wrapper"></div>
                 </div>
             </div>
-        </div>
 
-        <!-- Zoom Controls -->
-        <div class="zoom-controls">
-            <button id="zoom-in" title="Увеличить">+</button>
-            <button id="zoom-reset" title="Сбросить">⟲</button>
-            <button id="zoom-out" title="Уменьшить">−</button>
+            <!-- Swipe hint (shown once) -->
+            <div class="swipe-hint" id="swipe-hint">
+                ← Swipe to switch views →
+            </div>
+
+            <!-- Info button -->
+            <button class="mobile-info-btn" id="mobile-info-btn" title="Information">ℹ️</button>
         </div>
     </div>
 
-    <!-- Hover Tooltip -->
-    <div id="hover-tooltip" class="hover-tooltip" style="display: none;">
-        <strong id="tooltip-name"></strong>
-        <p id="tooltip-function"></p>
+    <!-- Mobile: Bottom Sheet -->
+    <div class="mobile-bottom-sheet" id="mobile-bottom-sheet">
+        <div class="sheet-handle" id="sheet-handle"></div>
+
+        <!-- Collapsed state: compact info -->
+        <div class="sheet-compact">
+            <div class="compact-title" id="compact-title">Muscle Name</div>
+            <div class="compact-function" id="compact-function">Brief function description</div>
+        </div>
+
+        <!-- Expanded state: full details -->
+        <div class="sheet-content">
+            <div class="sheet-header">
+                <h2 class="sheet-title" id="sheet-title">Muscle Name</h2>
+                <button class="sheet-close" id="sheet-close">×</button>
+            </div>
+
+            <p class="sheet-subtitle" id="sheet-subtitle">Latin name</p>
+
+            <div class="sheet-section">
+                <h3>Функция</h3>
+                <p id="sheet-function">Function description</p>
+            </div>
+
+            <div class="sheet-section">
+                <h3>Начало</h3>
+                <p id="sheet-origin">Origin description</p>
+            </div>
+
+            <div class="sheet-section">
+                <h3>Прикрепление</h3>
+                <p id="sheet-insertion">Insertion description</p>
+            </div>
+
+            <div class="sheet-section">
+                <h3>Описание</h3>
+                <p id="sheet-description">Full description</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Desktop: Zoom Controls -->
+    <div class="zoom-controls">
+        <button class="zoom-btn" id="zoom-in" title="Увеличить">+</button>
+        <button class="zoom-btn" id="zoom-reset" title="Сбросить">○</button>
+        <button class="zoom-btn" id="zoom-out" title="Уменьшить">−</button>
+    </div>
+
+    <!-- Desktop: Hover Tooltip -->
+    <div id="hover-tooltip">
+        <div id="tooltip-name">Muscle Name</div>
+        <div id="tooltip-function">Function</div>
     </div>
 
     <script type="module" src="js/main.js"></script>

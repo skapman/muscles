@@ -6,6 +6,7 @@ import { muscleData } from '../config/muscleData.js';
 import { muscleIdMap } from '../config/muscleIdMap.js';
 import { showTooltip, hideTooltip, updateTooltipPosition } from '../ui/tooltip.js';
 import { showMuscleDetails } from '../ui/sidebar.js';
+import { isMobile, registerMuscleElements } from '../core/mobile.js';
 
 // Store all muscle elements grouped by muscle key
 let allMuscleElements = {};
@@ -32,31 +33,39 @@ export function setupInteractivity(svg, view) {
             }
             allMuscleElements[muscleKey].push(muscleElement);
 
-            // Hover: highlight all parts of muscle
-            muscleElement.addEventListener('mouseenter', function(e) {
-                highlightMuscleGroup(muscleKey, true);
-                showTooltip(e, muscleKey);
-            });
+            // Hover: highlight all parts of muscle (desktop only)
+            if (!isMobile()) {
+                muscleElement.addEventListener('mouseenter', function(e) {
+                    highlightMuscleGroup(muscleKey, true);
+                    showTooltip(e, muscleKey);
+                });
 
-            muscleElement.addEventListener('mouseleave', function() {
-                highlightMuscleGroup(muscleKey, false);
-                hideTooltip();
-            });
+                muscleElement.addEventListener('mouseleave', function() {
+                    highlightMuscleGroup(muscleKey, false);
+                    hideTooltip();
+                });
 
-            muscleElement.addEventListener('mousemove', function(e) {
-                updateTooltipPosition(e);
-            });
+                muscleElement.addEventListener('mousemove', function(e) {
+                    updateTooltipPosition(e);
+                });
 
-            // Click: show details
-            muscleElement.addEventListener('click', function() {
-                showMuscleDetails(muscleKey);
-            });
+                // Click: show details (desktop)
+                muscleElement.addEventListener('click', function() {
+                    showMuscleDetails(muscleKey);
+                });
+            }
+            // Mobile: click handled in mobile.js
 
             console.log(`Initialized: ${elementId} -> ${muscleKey}`);
         } else {
             console.warn(`Element #${elementId} not found in ${view}`);
         }
     });
+
+    // Register elements with mobile module
+    if (isMobile()) {
+        registerMuscleElements(allMuscleElements);
+    }
 }
 
 /**
