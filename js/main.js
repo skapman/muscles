@@ -8,50 +8,90 @@ import { setupZoomControls, setupPanZoom, initZoom } from './core/zoom.js';
 import { setupSidebarToggle } from './ui/sidebar.js';
 import { isMobile, setupMobile } from './core/mobile.js';
 
+// NEW: Multi-layer system imports
+import { ThemeToggle } from './ui/themeToggle.js';
+import { LayerSlider } from './ui/layerSlider.js';
+import { SystemSwitcher } from './core/systemSwitcher.js';
+import { SystemBlocks } from './ui/systemBlocks.js';
+
+// Global instances
+let themeToggle;
+let layerSlider;
+let systemSwitcher;
+let systemBlocks;
+
 /**
  * Initialize application
  */
 async function init() {
     const mobile = isMobile();
 
-    // Load SVGs for appropriate layout
+    // Initialize new components first
+    initializeNewComponents();
+
+    // Load initial layer (muscles) through systemSwitcher
+    await systemSwitcher.switchTo('muscles');
+
+    // Setup mobile-specific features
     if (mobile) {
-        // Mobile: Load into mobile containers
-        const frontSvg = await loadSVG('body-front.svg', 'front-svg-wrapper-mobile');
-        const backSvg = await loadSVG('body-back.svg', 'back-svg-wrapper-mobile');
-
-        if (frontSvg) {
-            setupInteractivity(frontSvg, 'front');
-            setupPanZoom(document.getElementById('front-svg-wrapper-mobile'));
-        }
-
-        if (backSvg) {
-            setupInteractivity(backSvg, 'back');
-            setupPanZoom(document.getElementById('back-svg-wrapper-mobile'));
-        }
-
-        // Setup mobile-specific features
         setupMobile();
-    } else {
-        // Desktop: Load into desktop containers
-        const frontSvg = await loadSVG('body-front.svg', 'front-svg-wrapper');
-        const backSvg = await loadSVG('body-back.svg', 'back-svg-wrapper');
-
-        if (frontSvg) {
-            setupInteractivity(frontSvg, 'front');
-            setupPanZoom(document.getElementById('front-svg-wrapper'));
-        }
-
-        if (backSvg) {
-            setupInteractivity(backSvg, 'back');
-            setupPanZoom(document.getElementById('back-svg-wrapper'));
-        }
     }
 
     // Setup UI (common for both)
     setupSidebarToggle();
     setupZoomControls();
     initZoom();
+
+    console.log('✅ Application initialized with multi-layer system');
+}
+
+/**
+ * Initialize new multi-layer components
+ */
+function initializeNewComponents() {
+    // 1. Theme Toggle
+    themeToggle = new ThemeToggle();
+    console.log('✅ Theme toggle initialized');
+
+    // 2. Layer Slider
+    layerSlider = new LayerSlider();
+    console.log('✅ Layer slider initialized');
+
+    // 3. System Switcher
+    systemSwitcher = new SystemSwitcher();
+    console.log('✅ System switcher initialized');
+
+    // 4. System Blocks Renderer
+    systemBlocks = new SystemBlocks();
+    console.log('✅ System blocks renderer initialized');
+
+    // Setup event listeners
+    setupLayerChangeListener();
+}
+
+/**
+ * Setup layer change event listener
+ */
+function setupLayerChangeListener() {
+    window.addEventListener('layerChange', async (event) => {
+        const { layerId, layer } = event.detail;
+
+        console.log(`🔄 Layer change event: ${layer.name}`);
+
+        try {
+            // CRITICAL: Wait for system switch to complete
+            await systemSwitcher.switchTo(layerId);
+
+            // Only render blocks AFTER switch is fully complete
+            if (layer.hasBlocks) {
+                systemBlocks.render(layerId);
+            } else {
+                systemBlocks.clear();
+            }
+        } catch (error) {
+            console.error('❌ Error handling layer change:', error);
+        }
+    });
 }
 
 // Start when DOM ready
