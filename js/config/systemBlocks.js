@@ -577,4 +577,90 @@ export function getBlocksAffectingMuscle(muscleId) {
     return painBlocks.filter(block =>
         block.affectedAreas?.some(area => area.muscleId === muscleId)
     );
+
+/**
+ * Pain Points - Educational Topics
+ * These are displayed as pulsating red circles on the body map
+ */
+const painPoints = [
+    {
+        id: "what-is-pain",
+        title: "Что такое боль?",
+        position: { x: 50, y: 8 }, // Head/neck area (% of SVG)
+        content: `
+            <h3>Физиология боли</h3>
+            <p>TODO: Добавить контент о том, как работает болевая система организма, роль нервных окончаний и сигналов.</p>
+        `,
+        isHighPriority: false
+    },
+    {
+        id: "types-of-pain",
+        title: "Типы боли",
+        position: { x: 50, y: 25 }, // Chest area
+        content: `
+            <h3>Классификация боли</h3>
+            <p>TODO: Острая vs хроническая, мышечная vs суставная, воспалительная vs нейропатическая.</p>
+        `,
+        isHighPriority: false
+    },
+    {
+        id: "training-and-pain",
+        title: "Тренировки и боль",
+        position: { x: 25, y: 20 }, // Shoulder area
+        content: `
+            <h3>Когда можно тренироваться</h3>
+            <p>TODO: DOMS (крепатура) vs травма, правило "хорошей" и "плохой" боли, когда остановиться.</p>
+        `,
+        isHighPriority: false
+    },
+    {
+        id: "pain-relief",
+        title: "Методы облегчения",
+        position: { x: 70, y: 35 }, // Arm area
+        content: `
+            <h3>Способы справиться с болью</h3>
+            <p>TODO: Растяжка, массаж, холод/тепло, отдых, противовоспалительные, физиотерапия.</p>
+        `,
+        isHighPriority: false
+    },
+    {
+        id: "lower-back-pain-topic",
+        title: "Боль в пояснице",
+        position: { x: 50, y: 50 }, // Lower back - центральная позиция
+        content: `
+            <h3>Самая распространённая проблема</h3>
+            <p>TODO: Причины боли в пояснице, профилактика, упражнения для укрепления кора.</p>
+        `,
+        isHighPriority: true // Выделяем как важную тему
+    },
+    {
+        id: "pain-localization",
+        title: "Локализация боли",
+        position: { x: 40, y: 75 }, // Knee area
+        content: `
+            <h3>Как определить источник</h3>
+            <p>TODO: Отражённая боль, триггерные точки, как правильно описать боль врачу.</p>
+        `,
+        isHighPriority: false
+    },
+    {
+        id: "red-flags",
+        title: "Красные флаги",
+        position: { x: 50, y: 40 }, // Center torso
+        content: `
+            <h3>⚠️ Когда срочно к врачу</h3>
+            <p>TODO: Опасные симптомы, которые требуют немедленной медицинской помощи.</p>
+        `,
+        isHighPriority: true // Критически важная информация
+    }
+];
+
+}
+
+/**
+ * Get pain points (educational topics)
+ * @returns {Array} Array of pain point objects
+ */
+export function getPainPoints() {
+    return painPoints;
 }

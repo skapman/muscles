@@ -34,10 +34,9 @@ export const systemLayers = {
         color: '#ff5252',
         glowColor: 'rgba(255, 82, 82, 0.8)',
 
-        // Uses colored muscle SVGs for better visualization
+        // Only front view - single projection like other overlay systems
         svgFiles: [
-            { id: 'front', path: 'img/body-front-color.svg' },
-            { id: 'back', path: 'img/body-back-color.svg' }
+            { id: 'front', path: 'img/body-front-color.svg' }
         ],
 
         hasInteractivity: false,

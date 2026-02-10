@@ -276,8 +276,8 @@ body {
 }
 
 .svg-wrapper svg {
-    max-width: 90%;
-    max-height: 90%;
+    max-width: 98%;  /* Увеличено с 90% для максимального использования экрана */
+    max-height: 98%; /* Сохраняет пропорции с небольшим отступом */
     transition: transform 0.1s ease-out;
 }
 
@@ -531,6 +531,14 @@ button, .zoom-btn, .sidebar-toggle, .mobile-info-btn, .sheet-close {
             0 0 20px rgba(0, 212, 255, 0.2);
     }
 
+    [data-theme="light"] .mobile-info-btn {
+        background: rgba(255, 255, 255, 0.95);
+        border-color: var(--accent-primary);
+        box-shadow:
+            0 4px 15px rgba(0, 0, 0, 0.1),
+            0 0 20px var(--glow-color);
+    }
+
     .mobile-info-btn:active {
         transform: scale(0.95);
     }
@@ -557,6 +565,18 @@ button, .zoom-btn, .sidebar-toggle, .mobile-info-btn, .sheet-close {
         display: flex;
         gap: 8px;
         z-index: 10;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    /* Hide view indicators on single-projection layers */
+    [data-layer="pain"] .view-indicators,
+    [data-layer="nervous"] .view-indicators,
+    [data-layer="respiratory"] .view-indicators,
+    [data-layer="cardiovascular"] .view-indicators,
+    [data-layer="gadgets"] .view-indicators {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
     }
 
     .view-indicator {
@@ -833,7 +853,7 @@ button, .zoom-btn, .sidebar-toggle, .mobile-info-btn, .sheet-close {
 .layer-slider-container {
     position: fixed;
     left: 20px;
-    bottom: 50%;
+    bottom: 30% !important; /* Опущено ниже + !important для гарантии */
     transform: translateY(50%);
     z-index: 150;
     display: flex;
@@ -1132,6 +1152,250 @@ button, .zoom-btn, .sidebar-toggle, .mobile-info-btn, .sheet-close {
     .block-title {
         font-size: 1.1rem;
     }
+
+/* ============================================
+   PAIN LAYER STYLES
+   ============================================ */
+
+/* Pain Points Container */
+.pain-points-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 100;
+}
+
+/* Individual Pain Point */
+.pain-point {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: all;
+    cursor: pointer;
+    z-index: 101;
+}
+
+/* Pulsating Red Circle */
+.pain-circle {
+    width: 30px;
+    height: 30px;
+    /*
+     * НАСТРОЙКА ЯРКОСТИ И ПЛОТНОСТИ:
+     * radial-gradient(circle, ЦЕНТР, КРАЙ)
+     * - Первое значение (центр): rgba(255, 82, 82, X) - чем больше X (0-1), тем ярче центр
+     * - Второе значение (край): rgba(255, 82, 82, Y) - чем больше Y (0-1), тем ярче край
+     * - Разница X-Y определяет плотность: больше разница = более плотный центр
+     *
+     * Текущие значения: центр 0.95 (очень яркий), край 0.45 (средний)
+     * Попробуйте: центр 0.9-1.0, край 0.3-0.5
+     */
+    background: radial-gradient(circle, rgba(255, 82, 82, 0.95), rgba(255, 82, 82, 0.45));
+    border-radius: 50%;
+    animation: pulse-pain-sync 2s ease-in-out infinite;
+    box-shadow: 0 0 20px rgba(255, 82, 82, 0.6);
+}
+
+/* Синхронная анимация для всех точек */
+@keyframes pulse-pain-sync {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 0.7;
+    }
+}
+
+/* Callout Label - По умолчанию снизу, КЛИКАБЕЛЬНЫЙ */
+.pain-callout {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(26, 26, 46, 0.95);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 82, 82, 0.3);
+    pointer-events: auto; /* Кликабельный! */
+    cursor: pointer;
+    transition: all var(--transition-normal);
+}
+
+/* Верхний callout (для "Что такое боль?") - опущен ниже */
+.pain-callout.callout-top {
+    top: auto;
+    bottom: 10px; /* Опущен на высоту callout */
+    left: 20px; /* Правый край точки на одной вертикали с левым краем надписи */
+    transform: none;
+}
+
+[data-theme="light"] .pain-callout {
+    background: rgba(255, 255, 255, 0.95);
+    border-color: rgba(255, 82, 82, 0.5);
+}
+
+.pain-point:hover .pain-callout,
+.pain-callout:hover {
+    background: rgba(255, 82, 82, 0.95);
+    color: white;
+    border-color: rgba(255, 82, 82, 0.8);
+    transform: translateX(-50%) scale(1.05);
+}
+
+.pain-callout.callout-top:hover {
+    transform: scale(1.05);
+}
+
+/* Pain Points Container - Fade In/Out как у SVG */
+.pain-points-container {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.pain-points-container.fade-in {
+    opacity: 1;
+}
+
+.pain-points-container.fade-out {
+    opacity: 0;
+}
+
+/* ============================================
+   DETAIL VIEW (Universal for all layers)
+   ============================================ */
+
+/* Full Screen Detail View */
+.pain-detail-view,
+.detail-view {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: var(--bg-primary);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    overflow-y: auto;
+}
+
+.pain-detail-view.visible,
+.detail-view.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Detail View Header */
+.pain-detail-header,
+.detail-header {
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+    padding: 20px;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    z-index: 10;
+}
+
+/* Back Button - Universal */
+.pain-detail-back,
+.detail-back {
+    background: rgba(26, 26, 46, 0.9);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    margin-bottom: 16px;
+}
+
+[data-theme="light"] .pain-detail-back,
+[data-theme="light"] .detail-back {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.pain-detail-back:hover,
+.detail-back:hover {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
+}
+
+/* Detail View Title */
+.pain-detail-title,
+.detail-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+}
+
+/* Detail View Content */
+.pain-detail-content,
+.detail-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.pain-detail-content h3,
+.detail-content h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 32px;
+    margin-bottom: 16px;
+}
+
+.pain-detail-content p,
+.detail-content p {
+    font-size: 18px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+/* Mobile Adaptations */
+@media (max-width: 768px) {
+    .pain-circle {
+        width: 24px;
+        height: 24px;
+    }
+
+    .pain-callout {
+        font-size: 12px;
+        padding: 6px 12px;
+        top: 32px;
+    }
+
+    .pain-detail-title {
+        font-size: 24px;
+    }
+
+    .pain-detail-content {
+        padding: 24px 16px;
+    }
+
+    .pain-detail-content h3 {
+        font-size: 20px;
+    }
+
+    .pain-detail-content p {
+        font-size: 16px;
+    }
+}
 
     .block-icon {
         font-size: 28px;

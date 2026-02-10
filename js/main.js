@@ -13,12 +13,16 @@ import { ThemeToggle } from './ui/themeToggle.js';
 import { LayerSlider } from './ui/layerSlider.js';
 import { SystemSwitcher } from './core/systemSwitcher.js';
 import { SystemBlocks } from './ui/systemBlocks.js';
+import { PainPoints } from './ui/painPoints.js';
+import { PainDetailView } from './ui/painDetailView.js';
 
 // Global instances
 let themeToggle;
 let layerSlider;
 let systemSwitcher;
 let systemBlocks;
+let painPoints;
+let painDetailView;
 
 /**
  * Initialize application
@@ -65,8 +69,17 @@ function initializeNewComponents() {
     systemBlocks = new SystemBlocks();
     console.log('✅ System blocks renderer initialized');
 
+    // 5. Pain Points (for Pain Layer)
+    painPoints = new PainPoints();
+    console.log('✅ Pain points initialized');
+
+    // 6. Pain Detail View
+    painDetailView = new PainDetailView();
+    console.log('✅ Pain detail view initialized');
+
     // Setup event listeners
     setupLayerChangeListener();
+    setupPainPointListener();
 }
 
 /**
@@ -79,8 +92,32 @@ function setupLayerChangeListener() {
         console.log(`🔄 Layer change event: ${layer.name}`);
 
         try {
+            // Fade out pain points if switching away from pain layer
+            if (layerId !== 'pain' && painPoints.container) {
+                painPoints.container.classList.remove('fade-in');
+                painPoints.container.classList.add('fade-out');
+            }
+
             // CRITICAL: Wait for system switch to complete
             await systemSwitcher.switchTo(layerId);
+
+            // Handle Pain Layer specifically
+            if (layerId === 'pain') {
+                painPoints.render();
+                painPoints.show();
+                // Trigger fade-in animation (синхронно с SVG)
+                if (painPoints.container) {
+                    painPoints.container.classList.remove('fade-out');
+                    // Force reflow
+                    void painPoints.container.offsetHeight;
+                    painPoints.container.classList.add('fade-in');
+                }
+            } else {
+                // Hide after fade-out animation
+                setTimeout(() => {
+                    painPoints.hide();
+                }, 500); // Match CSS transition duration (0.5s)
+            }
 
             // Only render blocks AFTER switch is fully complete
             if (layer.hasBlocks) {
@@ -91,6 +128,19 @@ function setupLayerChangeListener() {
         } catch (error) {
             console.error('❌ Error handling layer change:', error);
         }
+    });
+}
+
+/**
+ * Setup pain point click listener
+ */
+function setupPainPointListener() {
+    window.addEventListener('painPointClick', (event) => {
+        const { point } = event.detail;
+        console.log(`🔴 Pain point clicked: ${point.title}`);
+
+        // Show detail view
+        painDetailView.show(point);
     });
 }
 
