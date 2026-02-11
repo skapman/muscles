@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>Граф Связей - Демо</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/base.css">
+    <link rel="stylesheet" href="styles/themes.css">
+    <link rel="stylesheet" href="styles/components/graph.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+        }
+
+        .demo-header {
+            background: #2196F3;
+            color: white;
+            padding: 12px 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .demo-header h1 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .demo-header p {
+            display: none;
+        }
+
+        .demo-selector {
+            background: white;
+            padding: 12px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .demo-selector h2 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .goal-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .goal-buttons::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .goal-buttons::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 2px;
+        }
+
+        .goal-btn {
+            width: 40px;
+            height: 40px;
+            background: #f5f5f5;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .goal-btn:hover {
+            border-color: #2196F3;
+            background: rgba(33, 150, 243, 0.05);
+            transform: scale(1.05);
+        }
+
+        .goal-btn:active {
+            transform: scale(0.95);
+        }
+
+        .goal-btn-all {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+        }
+
+        .goal-btn-all:hover {
+            border-color: #764ba2;
+            background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        }
+
+        @media (min-width: 768px) {
+            .demo-header {
+                padding: 20px 32px;
+            }
+
+            .demo-header h1 {
+                font-size: 24px;
+            }
+
+            .demo-header p {
+                font-size: 14px;
+            }
+
+            .demo-selector {
+                padding: 16px 32px;
+            }
+
+            .demo-selector h2 {
+                font-size: 16px;
+            }
+
+            .goal-btn {
+                width: 56px;
+                height: 56px;
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-header">
+        <h1>📊 Граф Связей Целей</h1>
+        <p>Визуализация связей между целями, упражнениями, мышцами и болями</p>
+    </div>
+
+    <div class="demo-selector">
+        <h2>Цель:</h2>
+        <div class="goal-buttons">
+            <button class="goal-btn goal-btn-all" data-goal="all" title="Все цели">🌐</button>
+            <button class="goal-btn" data-goal="bench-100kg" title="Жать 100кг">🏋️</button>
+            <button class="goal-btn" data-goal="build-chest" title="Набрать массу груди">💪</button>
+            <button class="goal-btn" data-goal="six-pack-abs" title="Кубики пресса">🎯</button>
+            <button class="goal-btn" data-goal="pullups-10-reps" title="Подтянуться 10 раз">💪</button>
+            <button class="goal-btn" data-goal="run-5km" title="Пробежать 5км">🏃</button>
+        </div>
+    </div>
+
+    <div id="graph-container"></div>
+
+    <script type="module">
+        import { RelationshipGraph } from './js/ui/RelationshipGraph.js';
+
+        // Initialize graph
+        const graph = new RelationshipGraph('graph-container', {
+            width: window.innerWidth,
+            height: window.innerHeight - 100,
+            defaultDepth: 2,
+            maxDepth: 3,
+            enableDrag: true  // Enable node dragging
+        });
+
+        // Handle goal selection
+        document.querySelectorAll('.goal-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const goalId = btn.dataset.goal;
+
+                if (goalId === 'all') {
+                    // Show all goals
+                    graph.showAllGoals(1);
+                } else {
+                    // Show single goal
+                    graph.show('goals', goalId);
+                }
+
+                // Visual feedback
+                document.querySelectorAll('.goal-btn').forEach(b => {
+                    if (!b.classList.contains('goal-btn-all')) {
+                        b.style.borderColor = '#ddd';
+                        b.style.background = '#f5f5f5';
+                    }
+                });
+
+                if (btn.classList.contains('goal-btn-all')) {
+                    btn.style.borderColor = '#764ba2';
+                    btn.style.background = 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)';
+                } else {
+                    btn.style.borderColor = '#2196F3';
+                    btn.style.background = 'rgba(33, 150, 243, 0.1)';
+                }
+            });
+        });
+
+        // Auto-load first goal
+        setTimeout(() => {
+            document.querySelector('.goal-btn').click();
+        }, 500);
+
+        // Handle window resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                graph.options.width = window.innerWidth;
+                graph.options.height = window.innerHeight - 100;
+                if (graph.canvas) {
+                    graph.canvas.width = graph.options.width;
+                    graph.canvas.height = graph.options.height;
+                }
+                if (graph.currentNode) {
+                    graph.show(graph.currentNode.type, graph.currentNode.id);
+                }
+            }, 300);
+        });
+    </script>
+</body>
+</html>

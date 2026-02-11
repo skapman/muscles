@@ -6,6 +6,8 @@
 
 import { muscleData } from '../config/muscleData.js';
 import { systemBlocks } from '../config/systemBlocks.js';
+import { goalData } from '../config/goalData.js';
+import { exerciseData } from '../config/exerciseData.js';
 
 export class DataResolver {
     /**
@@ -21,7 +23,9 @@ export class DataResolver {
             nervous: systemBlocks.nervous,
             respiratory: systemBlocks.respiratory,
             cardiovascular: systemBlocks.cardiovascular,
-            gadgets: systemBlocks.gadgets
+            gadgets: systemBlocks.gadgets,
+            goals: goalData,
+            exercises: exerciseData
         };
 
         const data = dataMap[type];
@@ -86,7 +90,12 @@ export class DataResolver {
             case 'pain':
                 this._traversePainRelationships(entity, currentNodeId, nodes, edges, visited, currentLevel, maxDepth);
                 break;
-            // Add more cases as needed
+            case 'goals':
+                this._traverseGoalRelationships(entity, currentNodeId, nodes, edges, visited, currentLevel, maxDepth);
+                break;
+            case 'exercises':
+                this._traverseExerciseRelationships(entity, currentNodeId, nodes, edges, visited, currentLevel, maxDepth);
+                break;
         }
     }
 
@@ -125,8 +134,62 @@ export class DataResolver {
             }
         });
 
-        // TODO: Add exercise relationships when exerciseData is available
-        // TODO: Add goal relationships when goalData is available
+        // Find exercises that target this muscle
+        const targetingExercises = Object.values(exerciseData).filter(exercise =>
+            exercise.primaryMuscles?.includes(muscle.id) ||
+            exercise.secondaryMuscles?.includes(muscle.id)
+        );
+
+        targetingExercises.forEach(exercise => {
+            const exerciseNodeId = `exercises:${exercise.id}`;
+            if (!visited.has(exerciseNodeId)) {
+                nodes.push({
+                    id: exerciseNodeId,
+                    type: 'exercises',
+                    data: exercise,
+                    level: currentLevel
+                });
+                visited.add(exerciseNodeId);
+            }
+
+            edges.push({
+                from: exerciseNodeId,
+                to: currentNodeId,
+                type: 'targets',
+                label: exercise.primaryMuscles?.includes(muscle.id) ? 'Primary' : 'Secondary'
+            });
+
+            // Recursively traverse exercise relationships
+            if (currentLevel < maxDepth) {
+                this._traverseExerciseRelationships(exercise, exerciseNodeId, nodes, edges, visited, currentLevel + 1, maxDepth);
+            }
+        });
+
+        // Find goals that involve this muscle
+        const relatedGoals = Object.values(goalData).filter(goal =>
+            goal.primaryMuscles?.includes(muscle.id) ||
+            goal.secondaryMuscles?.includes(muscle.id)
+        );
+
+        relatedGoals.forEach(goal => {
+            const goalNodeId = `goals:${goal.id}`;
+            if (!visited.has(goalNodeId)) {
+                nodes.push({
+                    id: goalNodeId,
+                    type: 'goals',
+                    data: goal,
+                    level: currentLevel
+                });
+                visited.add(goalNodeId);
+            }
+
+            edges.push({
+                from: goalNodeId,
+                to: currentNodeId,
+                type: 'involves',
+                label: goal.primaryMuscles?.includes(muscle.id) ? 'Primary' : 'Secondary'
+            });
+        });
     }
 
     /**
@@ -161,8 +224,259 @@ export class DataResolver {
             });
         }
 
-        // TODO: Add exercise relationships (solutions)
-        // TODO: Add goal relationships
+        // Add exercise solutions for pain
+        if (pain.exerciseIds) {
+            pain.exerciseIds.forEach(exerciseId => {
+                const exercise = exerciseData[exerciseId];
+                if (!exercise) return;
+
+                const exerciseNodeId = `exercises:${exerciseId}`;
+                if (!visited.has(exerciseNodeId)) {
+                    nodes.push({
+                        id: exerciseNodeId,
+                        type: 'exercises',
+                        data: exercise,
+                        level: currentLevel
+                    });
+                    visited.add(exerciseNodeId);
+                }
+
+                edges.push({
+                    from: currentNodeId,
+                    to: exerciseNodeId,
+                    type: 'solution',
+                    label: 'Helps with'
+                });
+            });
+        }
+
+        // Add related goals (therapeutic goals for pain relief)
+        const relatedGoals = Object.values(goalData).filter(goal =>
+            goal.problem?.painId === pain.id
+        );
+
+        relatedGoals.forEach(goal => {
+            const goalNodeId = `goals:${goal.id}`;
+            if (!visited.has(goalNodeId)) {
+                nodes.push({
+                    id: goalNodeId,
+                    type: 'goals',
+                    data: goal,
+                    level: currentLevel
+                });
+                visited.add(goalNodeId);
+            }
+
+            edges.push({
+                from: goalNodeId,
+                to: currentNodeId,
+                type: 'addresses',
+                label: 'Addresses'
+            });
+        });
+    }
+
+    /**
+     * Traverse goal relationships
+     * @private
+     */
+    static _traverseGoalRelationships(goal, currentNodeId, nodes, edges, visited, currentLevel, maxDepth) {
+        // Add primary exercises
+        const primaryExercises = Array.isArray(goal.primaryExercises)
+            ? goal.primaryExercises
+            : goal.primaryExercises?.map(e => typeof e === 'string' ? e : e.id) || [];
+
+        primaryExercises.forEach(exerciseId => {
+            const exercise = exerciseData[exerciseId];
+            if (!exercise) return;
+
+            const exerciseNodeId = `exercises:${exerciseId}`;
+            if (!visited.has(exerciseNodeId)) {
+                nodes.push({
+                    id: exerciseNodeId,
+                    type: 'exercises',
+                    data: exercise,
+                    level: currentLevel
+                });
+                visited.add(exerciseNodeId);
+            }
+
+            edges.push({
+                from: currentNodeId,
+                to: exerciseNodeId,
+                type: 'requires',
+                label: 'Primary Exercise'
+            });
+
+            // Recursively traverse exercise relationships
+            if (currentLevel < maxDepth) {
+                this._traverseExerciseRelationships(exercise, exerciseNodeId, nodes, edges, visited, currentLevel + 1, maxDepth);
+            }
+        });
+
+        // Add supportive exercises
+        const supportiveExercises = goal.supportiveExercises || [];
+        supportiveExercises.forEach(exerciseId => {
+            const exercise = exerciseData[exerciseId];
+            if (!exercise) return;
+
+            const exerciseNodeId = `exercises:${exerciseId}`;
+            if (!visited.has(exerciseNodeId)) {
+                nodes.push({
+                    id: exerciseNodeId,
+                    type: 'exercises',
+                    data: exercise,
+                    level: currentLevel
+                });
+                visited.add(exerciseNodeId);
+            }
+
+            edges.push({
+                from: currentNodeId,
+                to: exerciseNodeId,
+                type: 'includes',
+                label: 'Supportive Exercise'
+            });
+        });
+
+        // Add primary muscles
+        const primaryMuscles = goal.primaryMuscles || [];
+        primaryMuscles.forEach(muscleId => {
+            const muscle = muscleData[muscleId];
+            if (!muscle) {
+                console.warn(`Muscle not found: ${muscleId}`);
+                return;
+            }
+
+            const muscleNodeId = `muscles:${muscleId}`;
+            if (!visited.has(muscleNodeId)) {
+                nodes.push({
+                    id: muscleNodeId,
+                    type: 'muscles',
+                    data: { ...muscle, id: muscleId },
+                    level: currentLevel
+                });
+                visited.add(muscleNodeId);
+            }
+
+            edges.push({
+                from: currentNodeId,
+                to: muscleNodeId,
+                type: 'targets',
+                label: 'Primary Muscle'
+            });
+        });
+
+        // Add related pain (for therapeutic goals)
+        if (goal.problem?.painId) {
+            const pain = systemBlocks.pain.find(p => p.id === goal.problem.painId);
+            if (pain) {
+                const painNodeId = `pain:${pain.id}`;
+                if (!visited.has(painNodeId)) {
+                    nodes.push({
+                        id: painNodeId,
+                        type: 'pain',
+                        data: pain,
+                        level: currentLevel
+                    });
+                    visited.add(painNodeId);
+                }
+
+                edges.push({
+                    from: currentNodeId,
+                    to: painNodeId,
+                    type: 'addresses',
+                    label: 'Addresses'
+                });
+            }
+        }
+    }
+
+    /**
+     * Traverse exercise relationships
+     * @private
+     */
+    static _traverseExerciseRelationships(exercise, currentNodeId, nodes, edges, visited, currentLevel, maxDepth) {
+        // Add primary muscles
+        const primaryMuscles = exercise.primaryMuscles || [];
+        primaryMuscles.forEach(muscleId => {
+            const muscle = muscleData[muscleId];
+            if (!muscle) {
+                console.warn(`Muscle not found: ${muscleId}`);
+                return;
+            }
+
+            const muscleNodeId = `muscles:${muscleId}`;
+            if (!visited.has(muscleNodeId)) {
+                nodes.push({
+                    id: muscleNodeId,
+                    type: 'muscles',
+                    data: { ...muscle, id: muscleId },
+                    level: currentLevel
+                });
+                visited.add(muscleNodeId);
+            }
+
+            edges.push({
+                from: currentNodeId,
+                to: muscleNodeId,
+                type: 'targets',
+                label: 'Primary'
+            });
+        });
+
+        // Add secondary muscles
+        const secondaryMuscles = exercise.secondaryMuscles || [];
+        secondaryMuscles.forEach(muscleId => {
+            const muscle = muscleData[muscleId];
+            if (!muscle) {
+                console.warn(`Muscle not found: ${muscleId}`);
+                return;
+            }
+
+            const muscleNodeId = `muscles:${muscleId}`;
+            if (!visited.has(muscleNodeId)) {
+                nodes.push({
+                    id: muscleNodeId,
+                    type: 'muscles',
+                    data: { ...muscle, id: muscleId },
+                    level: currentLevel
+                });
+                visited.add(muscleNodeId);
+            }
+
+            edges.push({
+                from: currentNodeId,
+                to: muscleNodeId,
+                type: 'targets',
+                label: 'Secondary'
+            });
+        });
+
+        // Add exercise variations
+        const variations = exercise.variations || [];
+        variations.forEach(variationId => {
+            const variation = exerciseData[variationId];
+            if (!variation) return;
+
+            const variationNodeId = `exercises:${variationId}`;
+            if (!visited.has(variationNodeId)) {
+                nodes.push({
+                    id: variationNodeId,
+                    type: 'exercises',
+                    data: variation,
+                    level: currentLevel
+                });
+                visited.add(variationNodeId);
+            }
+
+            edges.push({
+                from: currentNodeId,
+                to: variationNodeId,
+                type: 'variation',
+                label: 'Variation'
+            });
+        });
     }
 
     /**
@@ -177,7 +491,9 @@ export class DataResolver {
             nervous: systemBlocks.nervous,
             respiratory: systemBlocks.respiratory,
             cardiovascular: systemBlocks.cardiovascular,
-            gadgets: systemBlocks.gadgets
+            gadgets: systemBlocks.gadgets,
+            goals: goalData,
+            exercises: exerciseData
         };
 
         const data = dataMap[type];
@@ -200,7 +516,7 @@ export class DataResolver {
      * @param {Array<string>} types - Entity types to search (default: all)
      * @returns {Array} Search results
      */
-    static search(query, types = ['muscles', 'pain', 'nervous', 'respiratory', 'cardiovascular', 'gadgets']) {
+    static search(query, types = ['muscles', 'pain', 'nervous', 'respiratory', 'cardiovascular', 'gadgets', 'goals', 'exercises']) {
         const results = [];
         const lowerQuery = query.toLowerCase();
 
@@ -281,6 +597,18 @@ export class DataResolver {
             related.pain = systemBlocks.pain.filter(pain =>
                 pain.affectedAreas?.some(area => area.muscleId === entityId)
             );
+
+            // Find exercises targeting this muscle
+            related.exercises = Object.values(exerciseData).filter(exercise =>
+                exercise.primaryMuscles?.includes(entityId) ||
+                exercise.secondaryMuscles?.includes(entityId)
+            );
+
+            // Find goals involving this muscle
+            related.goals = Object.values(goalData).filter(goal =>
+                goal.primaryMuscles?.includes(entityId) ||
+                goal.secondaryMuscles?.includes(entityId)
+            );
         } else if (entityType === 'pain') {
             // Get affected muscles
             if (entity.affectedAreas) {
@@ -288,6 +616,55 @@ export class DataResolver {
                     .map(area => muscleData[area.muscleId])
                     .filter(Boolean);
             }
+
+            // Get therapeutic goals
+            related.goals = Object.values(goalData).filter(goal =>
+                goal.problem?.painId === entityId
+            );
+
+            // Get exercise solutions
+            if (entity.exerciseIds) {
+                related.exercises = entity.exerciseIds
+                    .map(id => exerciseData[id])
+                    .filter(Boolean);
+            }
+        } else if (entityType === 'goals') {
+            // Get exercises for this goal
+            const primaryExercises = Array.isArray(entity.primaryExercises)
+                ? entity.primaryExercises
+                : entity.primaryExercises?.map(e => typeof e === 'string' ? e : e.id) || [];
+
+            related.exercises = primaryExercises
+                .map(id => exerciseData[id])
+                .filter(Boolean);
+
+            // Get target muscles
+            const allMuscles = [...(entity.primaryMuscles || []), ...(entity.secondaryMuscles || [])];
+            related.muscles = allMuscles
+                .map(id => muscleData[id])
+                .filter(Boolean);
+
+            // Get related pain (for therapeutic goals)
+            if (entity.problem?.painId) {
+                const pain = systemBlocks.pain.find(p => p.id === entity.problem.painId);
+                if (pain) related.pain = [pain];
+            }
+        } else if (entityType === 'exercises') {
+            // Get target muscles
+            const allMuscles = [...(entity.primaryMuscles || []), ...(entity.secondaryMuscles || [])];
+            related.muscles = allMuscles
+                .map(id => muscleData[id])
+                .filter(Boolean);
+
+            // Get goals that use this exercise
+            related.goals = Object.values(goalData).filter(goal => {
+                const primaryExercises = Array.isArray(goal.primaryExercises)
+                    ? goal.primaryExercises
+                    : goal.primaryExercises?.map(e => typeof e === 'string' ? e : e.id) || [];
+                const supportiveExercises = goal.supportiveExercises || [];
+
+                return primaryExercises.includes(entityId) || supportiveExercises.includes(entityId);
+            });
         }
 
         return related;
@@ -305,12 +682,16 @@ export class DataResolver {
             respiratory: systemBlocks.respiratory.length,
             cardiovascular: systemBlocks.cardiovascular.length,
             gadgets: systemBlocks.gadgets.length,
+            goals: Object.keys(goalData).length,
+            exercises: Object.keys(exerciseData).length,
             total: Object.keys(muscleData).length +
                    systemBlocks.pain.length +
                    systemBlocks.nervous.length +
                    systemBlocks.respiratory.length +
                    systemBlocks.cardiovascular.length +
-                   systemBlocks.gadgets.length
+                   systemBlocks.gadgets.length +
+                   Object.keys(goalData).length +
+                   Object.keys(exerciseData).length
         };
     }
 }
