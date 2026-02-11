@@ -14,7 +14,6 @@ import { LayerSlider } from './ui/layerSlider.js';
 import { SystemSwitcher } from './core/systemSwitcher.js';
 import { SystemBlocks } from './ui/systemBlocks.js';
 import { PainPoints } from './ui/painPoints.js';
-import { PainDetailView } from './ui/painDetailView.js';
 
 // Global instances
 let themeToggle;
@@ -22,7 +21,6 @@ let layerSlider;
 let systemSwitcher;
 let systemBlocks;
 let painPoints;
-let painDetailView;
 
 /**
  * Initialize application
@@ -73,13 +71,8 @@ function initializeNewComponents() {
     painPoints = new PainPoints();
     console.log('✅ Pain points initialized');
 
-    // 6. Pain Detail View
-    painDetailView = new PainDetailView();
-    console.log('✅ Pain detail view initialized');
-
     // Setup event listeners
     setupLayerChangeListener();
-    setupPainPointListener();
 }
 
 /**
@@ -131,18 +124,6 @@ function setupLayerChangeListener() {
     });
 }
 
-/**
- * Setup pain point click listener
- */
-function setupPainPointListener() {
-    window.addEventListener('painPointClick', (event) => {
-        const { point } = event.detail;
-        console.log(`🔴 Pain point clicked: ${point.title}`);
-
-        // Show detail view
-        painDetailView.show(point);
-    });
-}
 
 // Start when DOM ready
 if (document.readyState === 'loading') {
